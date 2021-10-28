@@ -26,3 +26,4 @@ for _ in range(2, 4_000_000):
     previous_vals = previous_vals[1], current_val  # cache previous_vals
 
 print(total)
+# answer: 4613732
