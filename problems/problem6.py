@@ -17,3 +17,14 @@ numbers and the square of the sum is
 Find the difference between the sum of the squares of the first one hundred
 natural numbers and the square of the sum.
 """
+
+import operator
+from functools import reduce
+
+max_num: int = 100
+
+sum_of_squares: int = sum(n*n for n in range(max_num + 1))
+square_of_sum: int = reduce(operator.add, range(max_num + 1))**2
+
+print(abs(sum_of_squares - square_of_sum))
+# ans: 25164150
