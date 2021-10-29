@@ -10,7 +10,7 @@ What is the largest prime factor of the number 600851475143 ?
 
 import math
 from functools import lru_cache
-from typing import Sequence
+from typing import Generator
 
 
 @lru_cache(maxsize=1024)
@@ -21,7 +21,7 @@ def is_prime(num: int) -> bool:
     return True
 
 
-def get_prime_factors(num: int) -> Sequence[int]:
+def iterate_prime_factors(num: int) -> Generator[int, int, None]:
 
     quotient: int = num
     for factor in range(2, math.ceil(math.sqrt(num)) + 1):
@@ -35,5 +35,5 @@ def get_prime_factors(num: int) -> Sequence[int]:
 
 
 num: int = 600851475143
-print(max(get_prime_factors(num)))
+print(max(iterate_prime_factors(num)))
 # answer: 6857
