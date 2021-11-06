@@ -33,7 +33,109 @@ What is the greatest product of four adjacent numbers in the same direction
 (up, down, left, right, or diagonally) in the 20×20 grid?
 """
 
-num_array = """
+from functools import reduce
+from itertools import chain
+import operator
+import re
+from typing import Tuple
+
+
+class NumTable:
+    def __init__(self, text: str) -> None:
+        self.table = tuple(self._generate_table(text))
+        if len(self.table) == 0:
+            raise ValueError('empty table')
+
+        self.shape = (len(self.table), len(self.table[0]))
+
+        is_rectangular = all(len(row) == self.shape[0] for row in self.table)
+        if not is_rectangular:
+            raise ValueError('table rows/columns must be of uniform legth')
+
+    @staticmethod
+    def _generate_table(text: str) -> Tuple[int]:
+
+        digit_pattern = re.compile(r'\s?(\d\d)\s?')
+
+        for row in text.split('\n'):
+            if row == "":
+                continue
+            yield tuple(map(int, re.findall(digit_pattern, row)))
+
+    def iter_rows(self, n_elems: int) -> Tuple[int]:
+        for row in self.table:
+            offset = 0
+            while (offset + n_elems) <= self.shape[0]:
+                yield row[offset:(offset + n_elems)]
+                offset += 1
+
+    def iter_columns(self, n_elems: int) -> Tuple[int]:
+
+        for x in range(self.shape[1]):
+            col = tuple(row[x] for row in self.table)
+
+            offset = 0
+            while (offset + n_elems) <= self.shape[0]:
+                yield col[offset:(offset + n_elems)]
+                offset += 1
+
+    def iter_diagonals(self, n_elems: int) -> Tuple[int]:
+
+        Y, X = self.shape
+        starting_coords = chain(((0, y) for y in range(Y)),
+                                ((x, 0) for x in range(1, X)))
+
+        for coords in starting_coords:
+
+            end_of_diagonal_reached = False
+            while not end_of_diagonal_reached:
+                x, y = coords
+
+                try:
+                    sequence: list[int] = []
+                    for _ in range(n_elems):
+                        sequence.append(self.table[y][x])
+                        x, y = (x+1), (y+1)
+
+                    yield tuple(sequence)
+                    sequence.clear()
+                    coords = (coords[0]+1), (coords[1]+1)
+
+                except IndexError:
+                    end_of_diagonal_reached = True
+
+    def iter_reverse_diagonals(self, n_elems: int) -> Tuple[int]:
+
+        Y, X = self.shape
+        starting_coords = chain(((x, 0) for x in range(X-1)),
+                                ((X-1, y) for y in range(Y)),
+                                )
+
+        for coords in starting_coords:
+
+            end_of_diagonal_reached = False
+            while not end_of_diagonal_reached:
+                x, y = coords
+
+                try:
+                    sequence: list[int] = []
+                    for _ in range(n_elems):
+                        sequence.append(self.table[y][x])
+                        x, y = (x-1), (y+1)
+
+                    if x < -1:
+                        # avoids negative indices NOT causing IndexError
+                        break
+
+                    yield tuple(sequence)
+
+                    coords = (coords[0]-1), (coords[1]+1)
+
+                except IndexError:
+                    end_of_diagonal_reached = True
+
+
+text_table = """
 08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 49 49 99 40 17 81 18 57 60 87 17 40 98 43 69 48 04 56 62 00
 81 49 31 73 55 79 14 29 93 71 40 67 53 88 30 03 49 13 36 65
@@ -55,3 +157,21 @@ num_array = """
 20 73 35 29 78 31 90 01 74 31 49 71 48 86 81 16 23 57 05 54
 01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48
 """
+
+table = NumTable(text_table)
+n_elems: int = 4
+
+adjanct_numbers: Tuple[int] = chain(
+                                    # table.iter_rows(n_elems),
+                                    # table.iter_columns(n_elems),
+                                    # table.iter_diagonals(n_elems),
+                                    table.iter_reverse_diagonals(n_elems)
+                                    )
+
+max_prod: int = 0
+for sequence in adjanct_numbers:
+    prod = reduce(operator.mul, sequence)
+    max_prod = max((prod, max_prod))
+
+print(max_prod)
+# answer: 70600674
