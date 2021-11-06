@@ -24,3 +24,12 @@ We can see that 28 is the first triangle number to have over five divisors.
 What is the value of the first triangle number to have over five hundred
 divisors?
 """
+
+
+def iter_triangular_numbers(n_th_triangular: int) -> int:
+    assert n_th_triangular > 0, 'n_th_triangular must be greater than 0'
+
+    total = 0
+    for n in range(1, n_th_triangular+1):
+        total += n
+        yield total
